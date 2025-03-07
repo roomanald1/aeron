@@ -1,0 +1,12 @@
+[package]
+name = "aeron_test"
+version = "0.1.0"
+edition = "2024"
+
+[package.metadata.scripts]
+publisher = "MODE=publisher cargo run"
+subscriber = "MODE=subscriber cargo run"
+
+[dependencies]
+aeron = "0.2.0"
+run_script = "0.11.0"
