@@ -53,8 +53,7 @@ pub fn start_publisher() -> Result<(), String> {
             continue;
         }
 
-        let result_code = publisher.offer(pub_buffer).map_err(|e| e.to_string())?;
-        println!("Sent {}", result_code)
+        let _ = publisher.offer(pub_buffer).map_err(|e| e.to_string())?;
     }
 }
 

@@ -10,7 +10,7 @@ function subscriber()
     Aeron.subscriber(ctx, conf; verbose=true) do sub
         println("Subscribed to $(conf.uri), stream $(conf.stream)")
         for message in sub
-            result = decode(message.buffer, "UTF-8")
+            result = replace(decode(message.buffer, "UTF-8"), "\0" => "")
             @info "Message received" result
         end
     end

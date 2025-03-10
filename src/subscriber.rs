@@ -12,7 +12,6 @@ pub fn start_subscriber() -> Result<(), String>{
     println!("Starting Subscriber");
 
     let mut context = Context::new();
-    println!("Using CnC file: {}", context.cnc_file_name());
     let path = "/var/folders/zc/xcb_h6vn4j54dm55bz9sy68w0000gn/T/aeron-ronnieday";
     println!("path , {path}");
     context.set_aeron_dir(path.to_string());
@@ -39,15 +38,11 @@ pub fn start_subscriber() -> Result<(), String>{
 
 
     let mut subscription = subscription.lock().map_err(|e|{ e.to_string()})?;
-
-    println!("got subscription lock");
     let idle: BusySpinIdleStrategy = Default::default();
     idle.reset();
 
 
     let mut handler_f = |buffer: &AtomicBuffer, offset, length, header: &Header| {
-        println!("handler called");
-
         unsafe {
             let slice_msg = slice::from_raw_parts_mut(buffer.buffer().offset(offset as isize), length as usize);
             let msg = String::from_utf8_lossy(slice_msg).to_string();
