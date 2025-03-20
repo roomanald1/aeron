@@ -14,29 +14,6 @@ job "aeron_demo" {
       }
     }
 
-    service {
-      name = "aeronmd"
-      port = "driver"
-
-      check {
-        type     = "tcp"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
-    service {
-      name = "juliasubscriber"
-      port = "http"
-
-      check {
-        type     = "http"
-        path     = "/health"
-        interval = "10s"
-        timeout  = "2s"
-      }
-    }
-
     task "media-driver" {
       driver = "docker"
 
@@ -63,9 +40,66 @@ job "aeron_demo" {
       driver = "docker"
 
       config {
-        image = "ronnieday/julia_subscriber:0.0.1"
+        image = "ronnieday/julia_subscriber:0.0.2"
         ports = ["http"]
         ipc_mode = "host"  # Share IPC namespace with the "media-driver" task
+      }
+
+      resources {
+        cpu    = 500  # 500 MHz
+        memory = 256  # 256MB
+      }
+    }
+
+    task "julia_publisher" {
+      driver = "docker"
+
+      config {
+        image = "ronnieday/julia_publisher:0.0.2"
+        ports = ["http"]
+        ipc_mode = "host"  # Share IPC namespace with the "media-driver" task
+      }
+
+      resources {
+        cpu    = 500  # 500 MHz
+        memory = 256  # 256MB
+      }
+    }
+
+   task "rust_publisher" {
+      driver = "docker"
+
+      config {
+        image = "ronnieday/rust_aeron:0.0.2"
+        ports = ["http"]
+        command = "./app/aeron_test"
+        ipc_mode = "host"  # Share IPC namespace with the "media-driver" task
+        network_mode = "host"
+      }
+
+      env {
+        MODE = "publisher"
+      }
+
+      resources {
+        cpu    = 500  # 500 MHz
+        memory = 256  # 256MB
+      }
+    }
+
+    task "rust_subscriber" {
+      driver = "docker"
+
+      env {
+        MODE = "subscriber"
+      }
+
+      config {
+        image = "ronnieday/rust_aeron:0.0.2"
+        ports = ["http"]
+        command = "./app/aeron_test"
+        ipc_mode = "host"  # Share IPC namespace with the "media-driver" task
+        network_mode = "host"
       }
 
       resources {

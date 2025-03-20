@@ -1,30 +1,16 @@
-
-# Use the official Rust image as the build stage
-FROM rust:1.65.0 AS builder
-
-# Create a new directory for the application source code
-WORKDIR /usr/src/aeron_test
-
-# Copy the Cargo.toml and source code to the container
-COPY Cargo.toml ./
-COPY src ./src
-
-# Build the application in release mode
+# Build stage
+FROM rust:1.85 AS builder
+# Install dependencies for OpenSSL
+RUN apt-get update && apt-get install -y pkg-config libssl-dev openssl
+WORKDIR /src
+COPY . .
 RUN cargo build --release
 
-# Use a minimal image for the final stage
-FROM debian:buster-slim
+# Runtime stage
+FROM debian:bookworm
+RUN apt-get update && apt-get install -y openssl ca-certificates libssl3 libssl-dev pkg-config openssl
 
-# Set the working directory
-WORKDIR /usr/local/bin
+COPY --from=builder /src/target/release/aeron_test /app/aeron_test
 
-# Copy the compiled binary from the builder stage
-COPY --from=builder /usr/src/aeron_test/target/release/aeron_test .
-
-# Set the environment variable to run the publisher
-ENV MODE=publisher
-
-EXPOSE 50000
-
-# Run the Rust publisher binary
-CMD ["./aeron_test"]
+EXPOSE 8000
+ENTRYPOINT ["/app/aeron_test"]
